@@ -36,16 +36,18 @@ type response struct {
 	Keys []*key `json:"keys"`
 }
 
-func getFederatedSignonCerts() (*Certs, error) {
+func getFederatedSignonCerts(httpClient *http.Client) (*Certs, error) {
 	if certs != nil {
 		if time.Now().Before(certs.Expiry) {
 			return certs, nil
 		}
 	}
-	resp, err := http.Get(googleOAuth2FederatedSignonCertsURL)
+
+	resp, err := httpClient.Get(googleOAuth2FederatedSignonCertsURL)
 	if err != nil {
 		return nil, err
 	}
+
 	cacheControl := resp.Header.Get("cache-control")
 	cacheAge := int64(7200) // Set default cacheAge to 2 hours
 	if len(cacheControl) > 0 {
